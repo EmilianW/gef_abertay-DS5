@@ -10,12 +10,24 @@ namespace gef
 	{
 		SonyControllerInputManagerD3D11 *context = (SonyControllerInputManagerD3D11 *) pvRef;
 
-		if (0 <= context->direct_input_->CreateDevice(pdidInstance->guidInstance, &context->joystick_, NULL)) {
+		if (context->direct_input_->CreateDevice(pdidInstance->guidInstance, &context->joystick_, NULL) == 0) {
 			return DIENUM_STOP;
 		}
 
 		return DIENUM_CONTINUE;
 	}
+
+	BOOL CALLBACK SonyControllerInputManagerD3D11::enumJoystickTwoCallback(const DIDEVICEINSTANCE* pdidInstance, VOID* pvRef)
+	{
+		SonyControllerInputManagerD3D11* context = (SonyControllerInputManagerD3D11*)pvRef;
+
+		if (context->direct_input_->CreateDevice(pdidInstance->guidInstance, &context->joystick2_, NULL) == 1) {
+			return DIENUM_STOP;
+		}
+
+		return DIENUM_CONTINUE;
+	}
+
 
 	BOOL CALLBACK SonyControllerInputManagerD3D11::enumObjectsCallback(const DIDEVICEOBJECTINSTANCE* pdidoi, VOID* pvRef)
 	{
@@ -30,7 +42,28 @@ namespace gef
 			diprg.lMin = 0;
 			diprg.lMax = 0xff;
 
-			if (0 > context->joystick_->SetProperty(DIPROP_RANGE, &diprg.diph)) {
+			if (context->joystick_->SetProperty(DIPROP_RANGE, &diprg.diph) < 0) {
+				return DIENUM_STOP;
+			}
+		}
+
+		return DIENUM_CONTINUE;
+	}
+
+	BOOL CALLBACK SonyControllerInputManagerD3D11::enumObjectTwoCallback(const DIDEVICEOBJECTINSTANCE* pdidoi, VOID* pvRef)
+	{
+		SonyControllerInputManagerD3D11* context = (SonyControllerInputManagerD3D11*)pvRef;
+
+		if (pdidoi->dwType & DIDFT_AXIS) {
+			DIPROPRANGE diprg;
+			diprg.diph.dwSize = sizeof(DIPROPRANGE);
+			diprg.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+			diprg.diph.dwObj = pdidoi->dwType;
+			diprg.diph.dwHow = DIPH_BYID;
+			diprg.lMin = 0;
+			diprg.lMax = 0xff;
+
+			if (context->joystick2_->SetProperty(DIPROP_RANGE, &diprg.diph) < 0) {
 				return DIENUM_STOP;
 			}
 		}
@@ -53,7 +86,10 @@ namespace gef
 			return;
 		}
 		
-		HRESULT hresult = S_OK;
+		//JOYSTICK
+
+		{ 
+			HRESULT hresult = S_OK;
 
 		// Find a Joystick Device
 		IDirectInputJoyConfig8* joystick_config = NULL;
@@ -65,20 +101,47 @@ namespace gef
 			joystick_config = NULL;
 		}
 
-		hresult =  direct_input_->EnumDevices(DI8DEVCLASS_GAMECTRL, enumJoysticksCallback, this, DIEDFL_ATTACHEDONLY);
-		if(SUCCEEDED(hresult))
+		hresult = direct_input_->EnumDevices(DI8DEVCLASS_GAMECTRL, enumJoysticksCallback, this, DIEDFL_ATTACHEDONLY);
+		if (SUCCEEDED(hresult))
 		{
-	
+
 			if (joystick_)
 			{
-				joystick_->SetDataFormat( &c_dfDIJoystick2 );
-				hresult = joystick_->EnumObjects( enumObjectsCallback, this, DIDFT_ALL );
+				joystick_->SetDataFormat(&c_dfDIJoystick2);
+				hresult = joystick_->EnumObjects(enumObjectsCallback, this, DIDFT_ALL);
 			}
 		}
+		
+		//JOYSTICK2
 
 		if(FAILED(hresult))
 			CleanUp();
+		}
+		{	HRESULT hresult = S_OK; 
+		// Find a Joystick Device
+		IDirectInputJoyConfig8* joystick2_config = NULL;
+		hresult = direct_input_->QueryInterface(IID_IDirectInputJoyConfig8, (void**)&joystick2_config);
 
+		if (joystick2_config)
+		{
+			joystick2_config->Release();
+			joystick2_config = NULL;
+		}
+
+		hresult = direct_input_->EnumDevices(DI8DEVCLASS_GAMECTRL, enumJoystickTwoCallback, this, DIEDFL_ATTACHEDONLY);
+		if (SUCCEEDED(hresult))
+		{
+
+			if (joystick2_)
+			{
+				joystick2_->SetDataFormat(&c_dfDIJoystick2);
+				hresult = joystick2_->EnumObjects(enumObjectTwoCallback, this, DIDFT_ALL);
+			}
+		}
+
+		if (FAILED(hresult))
+			CleanUp();
+		}
 
 	}
 
@@ -91,6 +154,7 @@ namespace gef
 	void SonyControllerInputManagerD3D11::CleanUp()
 	{
 		ReleaseNull(joystick_);
+		ReleaseNull(joystick2_);
 
 		if(is_ds5_enabled_)
 		{
@@ -116,24 +180,46 @@ namespace gef
 			return UpdateDS5();
 		}
 
-		if (joystick_==NULL) {
-			return -1;
-		}
-		joystick_->Acquire();
-		int ret = joystick_->Poll();
-		if (ret < 0) {
-			return ret;
+		//JOYSTICK
+		{
+			if (joystick_ == NULL) {
+				return -1;
+			}
+			joystick_->Acquire();
+			int ret = joystick_->Poll();
+			if (ret < 0) {
+				return ret;
+			}
+
+			DIJOYSTATE2 joystate;
+			ret = joystick_->GetDeviceState(sizeof(DIJOYSTATE2), &joystate);
+			if (ret < 0) {
+				return ret;
+			}
+			UpdateController(controller_, joystate);
 		}
 
-		DIJOYSTATE2 joystate;
-		ret = joystick_->GetDeviceState(sizeof(DIJOYSTATE2), &joystate);
-		if (ret < 0) {
-			return ret;
-		}
 
-		
-		UpdateController(controller_, joystate);
-		
+
+		//JOYSTICK2
+		{
+			if (joystick2_ == NULL) {
+				return -1;
+			}
+			joystick2_->Acquire();
+			int ret = joystick2_->Poll();
+			if (ret < 0) {
+				return ret;
+			}
+
+			DIJOYSTATE2 joystate;
+			ret = joystick2_->GetDeviceState(sizeof(DIJOYSTATE2), &joystate);
+			if (ret < 0) {
+				return ret;
+			}
+
+			UpdateController(controller2_, joystate);
+		}
 
 		return 0;
 	}

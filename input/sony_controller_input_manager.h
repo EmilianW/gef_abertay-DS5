@@ -260,12 +260,15 @@ namespace gef
 			if (controllersCountDS5 > 0 && controller_num < controllersCountDS5)
 				return &DS5_controllers_[controller_num];
 
-			return controller_num == 0 ? &controller_ : 0;
+			if (controller_num == 0) return &controller_;
+			if (controller_num == 1) return &controller2_;
+			else return NULL;
 		}
 
 		inline int GetDS5ControllerCount() { return controllersCountDS5; };
 	protected:
 		SonyController controller_;
+		SonyController controller2_;
 		std::vector<SonyController> DS5_controllers_;
 
 		// Num DS5 Controllers count
