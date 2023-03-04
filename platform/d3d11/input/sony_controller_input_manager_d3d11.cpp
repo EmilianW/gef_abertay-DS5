@@ -4,7 +4,7 @@
 
 namespace gef
 {
-	float SonyControllerInputManagerD3D11::kStickDeadZone = 0.1f;
+	float SonyControllerInputManagerD3D11::kStickDeadZone = 0.0f;
 
 	BOOL CALLBACK SonyControllerInputManagerD3D11::enumJoysticksCallback(const DIDEVICEINSTANCE* pdidInstance, VOID* pvRef)
 	{
