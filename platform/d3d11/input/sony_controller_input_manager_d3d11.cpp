@@ -10,7 +10,7 @@ namespace gef
 	{
 		SonyControllerInputManagerD3D11 *context = (SonyControllerInputManagerD3D11 *) pvRef;
 
-		if (context->direct_input_->CreateDevice(pdidInstance->guidInstance, &context->joysticks_[0], NULL) == 0) {
+		if (context->direct_input_->CreateDevice(pdidInstance->guidInstance, &context->joystick1, NULL) == 0) {
 			return DIENUM_STOP;
 		}
 
@@ -30,7 +30,7 @@ namespace gef
 			diprg.lMin = 0;
 			diprg.lMax = 0xff;
 
-			if (context->joysticks_[0]->SetProperty(DIPROP_RANGE, &diprg.diph) < 0) {
+			if (context->joystick1->SetProperty(DIPROP_RANGE, &diprg.diph) < 0) {
 				return DIENUM_STOP;
 			}
 		}
@@ -41,11 +41,9 @@ namespace gef
 	SonyControllerInputManagerD3D11::SonyControllerInputManagerD3D11(const PlatformD3D11& platform, LPDIRECTINPUT8 direct_input) :
 		SonyControllerInputManager(platform),
 		direct_input_(direct_input),
-		is_ds5_enabled_(false)
+		is_ds5_enabled_(false),
+		joystick1(NULL)
 	{
-
-		joysticks_.push_back(NULL);
-
 		is_ds5_enabled_ = InitialiseDS5Controller();
 
 		if(is_ds5_enabled_)
@@ -54,10 +52,7 @@ namespace gef
 			return;
 		}
 		
-
-		{ 
-			joysticks_[0] = NULL;
-			HRESULT hresult = S_OK;
+		HRESULT hresult = S_OK;
 
 		// Find a Joystick Device
 		IDirectInputJoyConfig8* joystick_config = NULL;
@@ -72,17 +67,16 @@ namespace gef
 		hresult = direct_input_->EnumDevices(DI8DEVCLASS_GAMECTRL, enumJoysticksCallback, this, DIEDFL_ATTACHEDONLY);
 		if (SUCCEEDED(hresult))
 		{
-
-			if (joysticks_[0])
+			if (joystick1)
 			{
-				joysticks_[0]->SetDataFormat(&c_dfDIJoystick2);
-				hresult = joysticks_[0]->EnumObjects(enumObjectsCallback, this, DIDFT_ALL);
+				joystick1->SetDataFormat(&c_dfDIJoystick2);
+				hresult = joystick1->EnumObjects(enumObjectsCallback, this, DIDFT_ALL);
 			}
 		}
 
 		if(FAILED(hresult))
 			CleanUp();
-		}
+		
 	}
 
 	SonyControllerInputManagerD3D11::~SonyControllerInputManagerD3D11()
@@ -93,7 +87,7 @@ namespace gef
 
 	void SonyControllerInputManagerD3D11::CleanUp()
 	{
-		ReleaseNull(joysticks_[0]);
+		ReleaseNull(joystick1);
 
 		if(is_ds5_enabled_)
 		{
@@ -121,21 +115,21 @@ namespace gef
 
 		//JOYSTICK
 		{
-			if (joysticks_[0] == NULL) {
+			if (joystick1 == NULL) {
 				return -1;
 			}
-			joysticks_[0]->Acquire();
-			int ret = joysticks_[0] ->Poll();
+			joystick1->Acquire();
+			int ret = joystick1->Poll();
 			if (ret < 0) {
 				return ret;
 			}
 
 			DIJOYSTATE2 joystate;
-			ret = joysticks_[0]->GetDeviceState(sizeof(DIJOYSTATE2), &joystate);
+			ret = joystick1->GetDeviceState(sizeof(DIJOYSTATE2), &joystate);
 			if (ret < 0) {
 				return ret;
 			}
-			UpdateController(DI_controllers_[0], joystate);
+			UpdateController(controller, joystate);
 		}
 		return 0;
 	}

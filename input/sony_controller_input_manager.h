@@ -259,14 +259,16 @@ namespace gef
 		{
 			if (controllersCountDS5 > 0 && controller_num < controllersCountDS5)
 				return &DS5_controllers_[controller_num];
-			if (controllersCountDI > 0 && controller_num < controllersCountDI)
-				return &DI_controllers_[controller_num];
+			//if (controllersCountDI > 0 && controller_num < controllersCountDI)
+				//return &DI_controllers_[controller_num];
+			if (controller_num == 0) return &controller;
 			else return NULL;
 		}
 
 		inline int GetDS5ControllerCount() { return controllersCountDS5; };
 	protected:
-		std::vector<SonyController> DI_controllers_; // DirectInput controllers
+		//std::vector<SonyController> DI_controllers_; // DirectInput controllers
+		SonyController controller;
 		std::vector<SonyController> DS5_controllers_; // DualSense5 controllers
 
 		// DS5 controllers count
