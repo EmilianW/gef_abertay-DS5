@@ -53,7 +53,7 @@ namespace gef
 		DS5W::DeviceEnumInfo infos[MAX_CONTROLLERS_DS5];
 
 		LPDIRECTINPUT8			direct_input_;
-		//std::vector<LPDIRECTINPUTDEVICE8> joysticks_;
+		std::vector<LPDIRECTINPUTDEVICE8> joysticks_;
 		LPDIRECTINPUTDEVICE8 joystick1;
 
 		static float kStickDeadZone;
