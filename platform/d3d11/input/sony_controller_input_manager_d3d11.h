@@ -12,6 +12,8 @@
 
 
 #define MAX_CONTROLLERS_DS5 4
+#define MAX_CONTROLLERS_DI 2
+
 namespace gef
 {
 	class PlatformD3D11;
@@ -54,8 +56,7 @@ namespace gef
 		DS5W::DeviceEnumInfo infos[MAX_CONTROLLERS_DS5];
 
 		LPDIRECTINPUT8			direct_input_;
-		LPDIRECTINPUTDEVICE8	joystick_;
-		LPDIRECTINPUTDEVICE8	joystick2_;
+		std::vector<LPDIRECTINPUTDEVICE8> joysticks_;
 
 		static float kStickDeadZone;
 	};
