@@ -12,7 +12,6 @@
 
 
 #define MAX_CONTROLLERS_DS5 4
-#define MAX_CONTROLLERS_DI 2
 
 namespace gef
 {
@@ -25,10 +24,8 @@ namespace gef
 		~SonyControllerInputManagerD3D11();
 
 		static BOOL CALLBACK enumJoysticksCallback( const DIDEVICEINSTANCE* pdidInstance, VOID* pContext );
-		static BOOL CALLBACK enumJoystickTwoCallback(const DIDEVICEINSTANCE* pdidInstance, VOID* pContext);
 
 		static BOOL CALLBACK enumObjectsCallback( const DIDEVICEOBJECTINSTANCE* pdidoi, VOID* pContext );
-		static BOOL CALLBACK enumObjectTwoCallback(const DIDEVICEOBJECTINSTANCE* pdidoi, VOID* pContext);
 
 
 		Int32 Update();

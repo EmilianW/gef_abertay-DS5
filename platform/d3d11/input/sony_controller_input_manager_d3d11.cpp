@@ -17,18 +17,6 @@ namespace gef
 		return DIENUM_CONTINUE;
 	}
 
-	BOOL CALLBACK SonyControllerInputManagerD3D11::enumJoystickTwoCallback(const DIDEVICEINSTANCE* pdidInstance, VOID* pvRef)
-	{
-		SonyControllerInputManagerD3D11* context = (SonyControllerInputManagerD3D11*)pvRef;
-
-		if (context->direct_input_->CreateDevice(pdidInstance->guidInstance, &context->joysticks_[1], NULL) == 1) {
-			return DIENUM_STOP;
-		}
-
-		return DIENUM_CONTINUE;
-	}
-
-
 	BOOL CALLBACK SonyControllerInputManagerD3D11::enumObjectsCallback(const DIDEVICEOBJECTINSTANCE* pdidoi, VOID* pvRef)
 	{
 		SonyControllerInputManagerD3D11 *context = (SonyControllerInputManagerD3D11 *) pvRef;
@@ -50,34 +38,12 @@ namespace gef
 		return DIENUM_CONTINUE;
 	}
 
-	BOOL CALLBACK SonyControllerInputManagerD3D11::enumObjectTwoCallback(const DIDEVICEOBJECTINSTANCE* pdidoi, VOID* pvRef)
-	{
-		SonyControllerInputManagerD3D11* context = (SonyControllerInputManagerD3D11*)pvRef;
-
-		if (pdidoi->dwType & DIDFT_AXIS) {
-			DIPROPRANGE diprg;
-			diprg.diph.dwSize = sizeof(DIPROPRANGE);
-			diprg.diph.dwHeaderSize = sizeof(DIPROPHEADER);
-			diprg.diph.dwObj = pdidoi->dwType;
-			diprg.diph.dwHow = DIPH_BYID;
-			diprg.lMin = 0;
-			diprg.lMax = 0xff;
-
-			if (context->joysticks_[1]->SetProperty(DIPROP_RANGE, &diprg.diph) < 0) {
-				return DIENUM_STOP;
-			}
-		}
-
-		return DIENUM_CONTINUE;
-	}
-
 	SonyControllerInputManagerD3D11::SonyControllerInputManagerD3D11(const PlatformD3D11& platform, LPDIRECTINPUT8 direct_input) :
 		SonyControllerInputManager(platform),
 		direct_input_(direct_input),
 		is_ds5_enabled_(false)
 	{
 
-		joysticks_.push_back(NULL);
 		joysticks_.push_back(NULL);
 
 		is_ds5_enabled_ = InitialiseDS5Controller();
@@ -88,7 +54,6 @@ namespace gef
 			return;
 		}
 		
-		//JOYSTICK
 
 		{ 
 			joysticks_[0] = NULL;
@@ -118,37 +83,6 @@ namespace gef
 		if(FAILED(hresult))
 			CleanUp();
 		}
-
-		//JOYSTICK2
-
-		{	
-			
-			HRESULT hresult = S_OK; 
-		// Find a Joystick Device
-		IDirectInputJoyConfig8* joystick2_config = NULL;
-		hresult = direct_input_->QueryInterface(IID_IDirectInputJoyConfig8, (void**)&joystick2_config);
-
-		if (joystick2_config)
-		{
-			joystick2_config->Release();
-			joystick2_config = NULL;
-		}
-
-		hresult = direct_input_->EnumDevices(DI8DEVCLASS_GAMECTRL, enumJoystickTwoCallback, this, DIEDFL_ATTACHEDONLY);
-		if (SUCCEEDED(hresult))
-		{
-
-			if (joysticks_[1])
-			{
-				joysticks_[1]->SetDataFormat(&c_dfDIJoystick2);
-				hresult = joysticks_[1]->EnumObjects(enumObjectTwoCallback, this, DIDFT_ALL);
-			}
-		}
-
-		if (FAILED(hresult))
-			CleanUp();
-		}
-
 	}
 
 	SonyControllerInputManagerD3D11::~SonyControllerInputManagerD3D11()
@@ -160,7 +94,6 @@ namespace gef
 	void SonyControllerInputManagerD3D11::CleanUp()
 	{
 		ReleaseNull(joysticks_[0]);
-		ReleaseNull(joysticks_[1]);
 
 		if(is_ds5_enabled_)
 		{
@@ -204,29 +137,6 @@ namespace gef
 			}
 			UpdateController(DI_controllers_[0], joystate);
 		}
-
-
-
-		//JOYSTICK2
-		{
-			if (joysticks_[1] == NULL) {
-				return -1;
-			}
-			joysticks_[1]->Acquire();
-			int ret = joysticks_[1]->Poll();
-			if (ret < 0) {
-				return ret;
-			}
-
-			DIJOYSTATE2 joystate;
-			ret = joysticks_[1]->GetDeviceState(sizeof(DIJOYSTATE2), &joystate);
-			if (ret < 0) {
-				return ret;
-			}
-
-			UpdateController(DI_controllers_[1], joystate);
-		}
-
 		return 0;
 	}
 
@@ -340,9 +250,6 @@ namespace gef
 
 	bool SonyControllerInputManagerD3D11::InitialiseDS5Controller()
 	{
-		
-		
-
 		// Call enumerate function and switch on return value
 		switch (DS5W::enumDevices(infos, MAX_CONTROLLERS_DS5, &controllersCountDS5)) {
 		case DS5W_OK:
@@ -371,7 +278,6 @@ namespace gef
 		}
 		// Return zero
 		return true;
-	
 	}
 
 	Int32 SonyControllerInputManagerD3D11::UpdateDS5()
