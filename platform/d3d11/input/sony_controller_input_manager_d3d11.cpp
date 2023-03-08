@@ -130,7 +130,7 @@ namespace gef
 			if (ret < 0) {
 				return ret;
 			}
-			UpdateController(controller, joystate);
+			UpdateController(DI_controllers_[0], joystate);
 		}
 		return 0;
 	}

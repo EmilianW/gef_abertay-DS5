@@ -259,13 +259,10 @@ namespace gef
 		{
 			if (controllersCountDS5 > 0 && controller_num < controllersCountDS5)
 				return &DS5_controllers_[controller_num];
-			//if (controllersCountDI > 0 && controller_num < controllersCountDI)
-			{
-			//	const SonyController* c = &DI_controllers_[controller_num];
-				//return c;
-			}
-			if (controller_num == 0) return &controller;
+			if (DI_controllers_.size() > 0 && controller_num < DI_controllers_.size())
+				return &DI_controllers_[controller_num];
 			else return NULL;
+
 		}
 
 		inline int GetDS5ControllerCount() { return controllersCountDS5; };

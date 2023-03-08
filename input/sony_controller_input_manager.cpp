@@ -3,7 +3,8 @@
 namespace gef
 {
 	SonyControllerInputManager::SonyControllerInputManager(const Platform& platform):
-		controllersCountDS5(0)
+		controllersCountDS5(0),
+		DI_controllers_(1)
 	{
 	}
 
