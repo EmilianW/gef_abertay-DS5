@@ -232,6 +232,24 @@ namespace gef
 		return 0;
 	}
 
+	Int32 AudioManagerD3D11::SetSampleVolume(const Int32 voice_index, float volume)
+	{
+		// Stop the request if the sample index does not exist
+		if (voice_index < 0 || voice_index >(samples_.size() - 1))
+			return -1;
+
+		// Stop request if sample is NULL
+		if (samples_[voice_index] == NULL)
+			return -1;
+
+		// Assign new volume from the argument
+		if (volume <= 0) samples_[voice_index]->setVolume(0);
+		if (volume >= 100) samples_[voice_index]->setVolume(100);
+		else samples_[voice_index]->setVolume(volume);
+
+		return 0;
+	}
+
 	Int32 AudioManagerD3D11::GetSampleVoiceVolumeInfo(const Int32 voice_index, VolumeInfo & volume_info)
 	{
 		// Stop the request if the sample index does not exist

@@ -30,6 +30,7 @@ public:
 	Int32 WriteAudioOut( const short *pBuffer );
 	Int32 SetSamplePitch(const Int32 voice_index, float pitch);
 	Int32 SetMusicPitch(float pitch);
+	Int32 SetSampleVolume(const Int32 voice_index, float volume);
 	Int32 GetSampleVoiceVolumeInfo(const Int32 voice_index, struct VolumeInfo& volume_info);
 	Int32 SetSampleVoiceVolumeInfo(const Int32 voice_index, const struct VolumeInfo& volume_info);
 	Int32 GetMusicVolumeInfo(struct VolumeInfo& volume_info);
