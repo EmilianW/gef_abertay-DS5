@@ -37,6 +37,7 @@ namespace gef
 		virtual Int32 StopPlayingSampleVoice(const Int32 voice_index) = 0;
 
 		virtual Int32 SetSamplePitch(const Int32 voice_index, float pitch) = 0;
+		virtual Int32 SetSampleVolume(const Int32 voice_index, float volume) = 0;
 		virtual Int32 SetMusicPitch(float pitch) = 0;
 		virtual Int32 GetSampleVoiceVolumeInfo(const Int32 voice_index, struct VolumeInfo& volume_info) = 0;
 		virtual Int32 SetSampleVoiceVolumeInfo(const Int32 voice_index, const struct VolumeInfo& volume_info) = 0;
