@@ -132,6 +132,22 @@ namespace gef
 		return sample_index;
 	}
 
+	Int32 AudioManagerD3D11::StopSample(const Int32 sample_index)
+	{
+		// Stop the request if the sample index does not exist
+		if (sample_index < 0 || sample_index >(samples_.size() - 1))
+			return -1;
+
+		// Stop request if sample is NULL
+		if (samples_[sample_index] == NULL)
+			return -1;
+
+		// Set looping and play on sample
+		samples_[sample_index]->stop();
+
+		return sample_index;
+	}
+
 	Int32 AudioManagerD3D11::StopPlayingSampleVoice(const Int32 voice_index)
 	{
 		// Stop the request if the sample index does not exist
@@ -249,6 +265,20 @@ namespace gef
 		music.setPitch(pitch);
 
 		return 0;
+	}
+
+	bool AudioManagerD3D11::IsSamplePlaying(const Int32 sample_index)
+	{
+		// Stop the request if the sample index does not exist
+		if (sample_index < 0 || sample_index >(samples_.size() - 1))
+			return false;
+
+		// Stop request if sample is NULL
+		if (samples_[sample_index] == NULL)
+			return false;
+
+		if (samples_[sample_index]->getStatus() == sf::SoundSource::Status::Playing) return true;
+		else return false;
 	}
 
 

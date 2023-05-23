@@ -34,6 +34,8 @@ namespace gef
 		virtual Int32 PlayMusic() = 0;
 		virtual Int32 StopMusic() = 0;
 		virtual Int32 PlaySample(const Int32 sample_index, const bool looping = false) = 0;
+		virtual Int32 StopSample(const Int32 sample_index) = 0;
+		virtual bool IsSamplePlaying(const Int32 sample_index) = 0;
 		virtual Int32 StopPlayingSampleVoice(const Int32 voice_index) = 0;
 
 		virtual Int32 SetSamplePitch(const Int32 voice_index, float pitch) = 0;

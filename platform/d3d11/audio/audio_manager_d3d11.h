@@ -21,6 +21,8 @@ public:
 	Int32 PlayMusic();
 	Int32 StopMusic();
 	Int32 PlaySample(const Int32 sample_index, const bool looping = false);
+	Int32 StopSample(const Int32 sample_index);
+	bool IsSamplePlaying(const Int32 sample_index);
 	Int32 StopPlayingSampleVoice(const Int32 voice_index);
 	void UnloadMusic();
 	void UnloadSample(Int32 sample_num);
